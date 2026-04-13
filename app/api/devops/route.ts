@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { NextResponse } from 'next/server'
-import { runHealthChecks } from '@/lib/devops/checks/health/check'
+
 
 // ✅ GET = health check
 export async function GET() {
