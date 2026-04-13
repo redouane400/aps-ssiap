@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 
 // ✅ GET = health check
 export async function GET() {
-  return Response.json({ status: "ok" })
+  return NextResponse.json({ status: "ok" })
 }
 
 // ✅ POST = logs / agent
