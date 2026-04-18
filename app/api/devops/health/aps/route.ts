@@ -30,7 +30,7 @@ export async function GET() {
           status: r.status,
           message: r.message
         }))
-      )
+      ).insert(...).select()
 
     if (error) {
       return NextResponse.json(

@@ -34,7 +34,7 @@ export async function POST(req: Request) {
           payload: body
         }
       ])
-
+		.select()
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
