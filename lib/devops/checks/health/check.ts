@@ -1,10 +1,7 @@
 export async function runHealthChecks(baseUrl: string) {
-  const endpoints = [
-    "/api/devops",
-    "/"
-  ]
+  const endpoints = ['/api/devops', '/']
 
-  const results = []
+  const results: any[] = []
 
   for (const endpoint of endpoints) {
     try {
@@ -12,15 +9,15 @@ export async function runHealthChecks(baseUrl: string) {
 
       results.push({
         endpoint,
-        status: res.ok ? "ready" : "blocked",
+        status: res.ok ? 'ready' : 'blocked',
         responseCode: res.status,
-        message: res.ok ? "OK" : "Erreur API"
+        message: res.ok ? 'OK' : 'Erreur API'
       })
     } catch {
       results.push({
         endpoint,
-        status: "blocked",
-        message: "Erreur réseau"
+        status: 'blocked',
+        message: 'Erreur réseau'
       })
     }
   }

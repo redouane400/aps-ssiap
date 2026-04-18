@@ -1,32 +1,36 @@
 export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
+import { runHealthChecks } from '@/lib/devops/checks/health/check'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
-// ✅ GET = health check simple
 export async function GET() {
-  return NextResponse.json({ status: 'ok' })
-}
-
-// ✅ POST = logs agent
-export async function POST(req: Request) {
   try {
     const supabaseAdmin = getSupabaseAdmin()
 
-    const body = await req.json()
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Supabase not configured' },
+        { status: 500 }
+      )
+    }
 
-    const { data, error } = await supabaseAdmin
-      .from('devops_runs')
-      .insert([
-        {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL!
+
+    const results = await runHealthChecks(baseUrl)
+
+    const { error } = await supabaseAdmin
+      .from('devops_health_checks')
+      .insert(
+        results.map((r) => ({
           project_key: 'aps-ssiap',
           environment: 'dev',
-          mode: 'manual',
-          status: 'success',
-          summary: 'Agent run',
-          payload: body
-        }
-      ])
+          endpoint: r.endpoint,
+          response_code: r.responseCode ?? null,
+          status: r.status,
+          message: r.message
+        }))
+      )
 
     if (error) {
       return NextResponse.json(
@@ -35,7 +39,7 @@ export async function POST(req: Request) {
       )
     }
 
-    return NextResponse.json({ success: true, data })
+    return NextResponse.json({ results })
   } catch (err) {
     return NextResponse.json(
       { error: 'Server error' },
