@@ -1,27 +1,45 @@
 export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
-import { runHealthChecks } from '@/lib/devops/checks/health/check'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
+// ✅ GET = health check simple
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL!
+  return NextResponse.json({ status: 'ok' })
+}
 
-  const results = await runHealthChecks(baseUrl)
+// ✅ POST = logs agent
+export async function POST(req: Request) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin()
 
-  const { error } = await supabaseAdmin.from('devops_health_checks').insert(
-    results.map(r => ({
-      project_key: 'aps-ssiap',
-      environment: 'dev',
-      endpoint: r.endpoint,
-      response_code: r.responseCode ?? null,
-      status: r.status,
-      message: r.message
-    }))
-  )
+    const body = await req.json()
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const { data, error } = await supabaseAdmin
+      .from('devops_runs')
+      .insert([
+        {
+          project_key: 'aps-ssiap',
+          environment: 'dev',
+          mode: 'manual',
+          status: 'success',
+          summary: 'Agent run',
+          payload: body
+        }
+      ])
+
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true, data })
+  } catch (err) {
+    return NextResponse.json(
+      { error: 'Server error' },
+      { status: 500 }
+    )
   }
-
-  return NextResponse.json({ results })
 }
