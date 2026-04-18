@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { NextResponse } from 'next/server'
 
 
+
 // ✅ GET = health check
 export async function GET() {
   return NextResponse.json({ status: "ok" })
